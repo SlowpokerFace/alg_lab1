@@ -1,0 +1,134 @@
+import time
+import matplotlib.pyplot as plt
+import csv
+
+
+def alg1(a, M, N, target):
+    y = N - 1
+    x = 0
+    while (0 <= x < M and 0 <= y < N):
+        if y > 0 and a[x][y] > target:
+            y -= 1
+        elif a[x][y] < target and x < M:
+            x += 1
+        else:
+            print('шикардос', a[x][y])
+            break
+
+
+def bin_search(a, bg, nd, target):
+    md = bg + (nd - bg) // 2
+
+    while bg != nd and (bg != md or a[md] == target) and (0 < md < len(a) - 1 or a[md] == target):
+
+        if a[md] > target:
+            return bin_search(a, bg, md, target)
+        elif a[md] < target:
+            return bin_search(a, md, nd, target)
+        else:
+            print('шикардос', a[md])
+            return 1
+    else:
+        return 0
+
+
+def alg2(a):
+    for i in a:
+        b = bin_search(i, 0, N, target)
+        if b == 1:
+            break
+
+
+def alg3(a):
+    y = N - 1
+    x = 0
+    shift = 2
+    flag = 0
+    while (0 <= x < M and 0 <= y < N):
+        if flag >= 2:
+            if y - shift >= 0 and a[x][y] > target:
+                old = y
+                new = y - shift
+                y -= shift
+                shift *= 2
+                flag += 1
+            elif y - shift < 0:
+                flag = 0
+                old = new
+                new = 0
+                shift = 2
+                b = bin_search(a[x], new, old, target)
+                if b == 1:
+                    break
+            elif a[x][y] < target and flag == 2:
+                flag = 0
+                shift = 2
+                x += 1
+            elif a[x][y] < target and flag > 2:
+                flag = 0
+                shift = 2
+                b = bin_search(a[x], new, old, target)
+                if b == 1:
+                    break
+
+        elif y > 0 and a[x][y] > target:
+            y -= 1
+            flag += 1
+        elif a[x][y] < target and x < M:
+            x += 1
+            flag = 0
+        else:
+            print('шикардос', a[x][y])
+            break
+
+
+ans_alg1_1 = [0]*14
+ans_alg2_1 = [0]*14
+ans_alg3_1 = [0]*14
+Y = []
+repeats = 10
+for i in range(14):
+    Y.append(i)
+for _ in range(repeats):
+    for i in range(14):
+        M = 2 ** i
+
+        N = 2 ** 13
+
+        target = 2 * N + 1
+        a = [[0] * N for i in range(M)]
+        for ii in range(M):
+            for jj in range(N):
+                a[ii][jj] = (N // M * ii + jj) * 2
+
+        bg = time.time()
+        alg1(a, M, N, target)
+        nd = time.time()
+        ans_alg1_1[i] += nd - bg
+
+        bg = time.time()
+        alg2(a)
+        nd = time.time()
+        ans_alg2_1[i] += nd - bg
+
+        bg = time.time()
+        alg3(a)
+        nd = time.time()
+        ans_alg3_1[i] += nd - bg
+for i in range(len(ans_alg1_1)):
+    ans_alg1_1[i] /= repeats
+    ans_alg2_1[i] /= repeats
+    ans_alg3_1[i] /= repeats
+print(ans_alg1_1)
+print(ans_alg2_1)
+print(ans_alg3_1)
+
+
+plt.plot(Y, ans_alg1_1)
+plt.plot(Y, ans_alg2_1)
+plt.plot(Y, ans_alg3_1)
+plt.xlabel('i')
+plt.ylabel('time')
+plt.grid()
+plt.legend(['common','bin','exp'])
+plt.show()
